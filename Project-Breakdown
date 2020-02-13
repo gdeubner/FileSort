@@ -27,3 +27,53 @@ are we only expected to read in numbers and letters as input?
 If other characters are allowed, how do we differentiate between characters to be skipped over (like the space or tab characters) and others, like: * & ^ $ # @ ect.
 
 The two function prototypes are different, even though you said they appaear to be the same.... Is there a mistake?
+
+
+FILE-SORT
+
+
+
+check num arguments
+
+open file
+
+check file exists
+
+
+Do{
+	- read in 100 bytes (chars) to a string allocated to fit 100 chars
+	   - While loop(make sure all 100 bytes are read in (non-blocking IO))
+	
+	- parse the string into pieces seperated by commas, ignoring white space
+
+	- add each piece to a linked list  (will be unordered) and increment a counter
+
+} while( repeat process of reading in 100 bytes from file until reach EOF character )
+
+copy list into array of size counter   (because both sorting methods are designed to run on arrays, not Linked Lists)
+
+
+depending on flag read in from command line, execute Insertion Sort of Quick Sort
+
+
+Header File:
+
+       Structs:
+		- intNode - for holding pieces of file
+		- stringNode (char*) - same idea
+
+	Functions:
+
+		- int compare(int, int)
+		- int compare(char*, char*)
+
+fileSort.c:
+
+
+	- int sequentialSort(void* toSort, funtion pointer to appropriate compare method)
+	- int quickSort(void* toSort, function pointer to appropriate compare method)
+
+	- readFile   - will handle all of reading in file, exceptions and errors
+	  	     - will return either a linked list of strngs
+	- int* convertLLtoArray (string linked list)
+	- char* convertLLtoArray (string linked list) 
