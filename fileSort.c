@@ -7,15 +7,51 @@
 
 //need to figure out how to combine tokens split when reading in pice of file!!!
 
-int fileType; //0 = numbers, 1 = letters
+int fileType = 1; //0 = numbers, 1 = letters
 int errorNumber;  //this is set to value of errno for displaying later
 int* numArray;
 char** strArray;
 
+int comparator(void*, void*);
 char* cleanStr(char*);
 void printLL(node*);
 node* parseString(char*, char, node*);
 int* readFile(int, char*);
+
+
+//return 1 if A>B, -1 if B>A, and 0 if A=B
+int comparator(void* tokenA, void* tokenB){
+  if(fileType==1){
+    char* a = (char*)tokenA;
+    char* b = (char*)tokenB;
+    int position = 0;
+    while(a[position]!='\0'&&b[position]!='\0'){
+      if((int)a[position]<(int)b[position]){
+	return 1;
+      }
+      else if((int)a[position]>(int)b[position]){
+	return -1;
+      }
+      position++;
+    }
+    if(a[position]=='\0'&b[position]!='\0')
+      return -1;
+    if(a[position]!='\0'&&b[position]=='\0')
+      return 1;
+    return 0;
+  }
+  else{
+    int a = *((int*)tokenA);
+    int b = *((int*)tokenB); 
+    if(a>b)
+      return 1;
+    if(a<b)
+      return -1;
+    return 0;
+  }
+}
+
+
 
 //removes all characters from a string that are not lowercase letters or numbers
 char* cleanStr(char* str){
@@ -120,8 +156,10 @@ int* readFile(int arguments, char* fileName){
 
 
 int main (int argc, char** argv){
-
-  readFile(argc, argv[1]);
+  char* a = "hello";
+  char* b = "helloo";
+  printf("%d\n", comparator(a, b));
+  //readFile(argc, argv[1]);
 
 
   return 0;
