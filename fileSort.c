@@ -12,12 +12,44 @@ int errorNumber;  //this is set to value of errno for displaying later
 int* numArray;
 char** strArray;
 
+void* makeArray(node*);
 int comparator(void*, void*);
 char* cleanStr(char*);
 void printLL(node*);
-node* parseString(char*, char, node*);
-int* readFile(int, char*);
+node* parseString(char*, char, node*, char*);
+node* readFile(int, char*);
 
+void* makeArray(node* head){
+  node* ptr = head;
+  node* prev = NULL;
+  int size = 0;
+  while(ptr!=NULL){
+    size++;
+    ptr = ptr->next;
+  }
+  ptr = head;
+  int count = 0;
+  if(fileType==1){//letters
+    char** array = malloc(sizeof(char*)*size);
+    while(ptr!=NULL){
+      array[count] = ptr->str;
+      prev = ptr;
+      ptr = ptr->next;
+      free(prev);
+    }
+    return array;
+  }
+  else{//numbers
+    int* array = malloc(sizeof(int)*size);
+    while(ptr!=NULL){
+      array[count] = atoi(ptr->str);
+      prev = ptr;
+      ptr = ptr->next;
+      free(prev);
+    }
+    return array;
+  }
+}
 
 //return 1 if A>B, -1 if B>A, and 0 if A=B
 int comparator(void* tokenA, void* tokenB){
@@ -78,32 +110,42 @@ void printLL(node* head){  //for testing purposes
 }
 
 //will parse a given string by a given delimitor
-node* parseString(char* str, char delim, node* head){
+//NEED TO DEAL WITH BROKENtOKENS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//Need to handle empty first token
+//Need to exclude empty last token
+node*  parseString(char* str, char delim, node* head, char* brokenToken){
   int position = 0;
   int lastDelim = 0;//position right after last deliminator. starts at beginning of string
-
+  int isFirstToken = 1;  //1 if token being read in is the first token read in, 0 otherwise
   while(str[lastDelim]!= '\0'){
     if(str[position]==delim||str[position]=='\0'){
       if(position!=lastDelim){
-      char* strTemp = malloc((sizeof(char)*position-lastDelim)+1);
-      node* newNode = malloc(sizeof(node));
-      strncpy(strTemp, str+lastDelim, position-lastDelim);
-      newNode->next = head;
-      newNode->str = cleanStr(strTemp);
-      head = newNode;
-      lastDelim = position+1;
+	char* strTemp = malloc((sizeof(char)*(position-lastDelim)+1));
+	node* newNode = malloc(sizeof(node));
+	strncpy(strTemp, str+lastDelim, position-lastDelim);
+	newNode->next = head;
+	newNode->str = cleanStr(strTemp);
+	head = newNode;
+	lastDelim = position+1;
+	if(brokenToken!=NULL && isFirstToken==1){///////////////////////////////////
+	  isFirstToken=0;
+	  char* strTemp2 = malloc(sizeof(char)*(strlen(strTemp)+strlen(brokenToken)));
+	  strncpy(strTemp2, brokenToken, strlen(brokenToken));
+	  strncpy(strTemp2+strlen(brokenToken), strTemp, strlen(strTemp));
+	  free(newNode->str);
+	  newNode->str = strTemp2;
+	}
       }
       else
 	lastDelim = position+1;
     }
     position++;  
   }
-  printLL(head);
   return head;
 }
 
 //will read in all charaters of a file, parse them by commas, and add them to a linked list
-int* readFile(int arguments, char* fileName){
+node* readFile(int arguments, char* fileName){
   int bytesToRead = 2000;
   if(arguments <=1){
     printf("ERROR: insuficient arguments.\n");
@@ -116,24 +158,27 @@ int* readFile(int arguments, char* fileName){
     return NULL;
   }
 
-  char * buffer  = (char*)malloc(sizeof(char)*(bytesToRead +1));
+  char * buffer  = (char*)malloc(sizeof(char)*(bytesToRead));
   errorNumber=errno;
   if(buffer==NULL){
     printf("ERROR: unable to malloc.Errno: %d\n", errorNumber);
     return NULL;
   }
 
-
-  int bytesRead = -2;
+  int totalBytesRead = 0; //all bytes read 
+  int bytesRead = -2;  //bytes read in one iteration of read()
+  char* brokenToken = NULL;
+  node* head = NULL;
+  int numNodes = 0;
   do{
     
-    memset(buffer, '\0', (bytesToRead+1));
-
+    memset(buffer, '\0', (bytesToRead));
     bytesRead = 0;
+
     while(bytesRead < bytesToRead){
-      printf("%d\n", bytesRead);
-      bytesRead = read(fd, buffer+bytesRead, bytesToRead-bytesRead);
+      bytesRead = read(fd, buffer+totalBytesRead, bytesToRead-totalBytesRead);
       errorNumber = errno;
+      totalBytesRead+=bytesRead;
       if(bytesRead==0)
 	break;
 
@@ -142,25 +187,31 @@ int* readFile(int arguments, char* fileName){
 	return NULL;
       }
     }
-    node* head = NULL;
-    //in place of this print statement, add each token to linked list
-    printf("%s\n", buffer);
-    parseString(buffer, ',', head);
 
+    
+    //in place of this print statement, add each token to linked list
+    // printf("FILE:%s\n", buffer);
+    head =  parseString(buffer, ',', head, brokenToken);
+    
+    if(bytesRead!=0){
+      brokenToken = head->str;
+      node* temp = head;
+      head = head->next;
+      free(temp);
+      numNodes--;
+    }
 
   }while(bytesRead != 0);
 
-  
-  return NULL;
+  printLL(head);
+  close(fd);
+  return head;
 }
 
 
 int main (int argc, char** argv){
-  char* a = "hello";
-  char* b = "helloo";
-  printf("%d\n", comparator(a, b));
-  //readFile(argc, argv[1]);
-
+  void* array =  makeArray(readFile(argc, argv[1]));
+  
 
   return 0;
 }
