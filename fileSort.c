@@ -12,6 +12,7 @@ int errorNumber;  //this is set to value of errno for displaying later
 int* numArray;
 char** strArray;
 
+int setFileType(node*);
 void* makeArray(node*);
 int comparator(void*, void*);
 char* cleanStr(char*);
@@ -19,18 +20,26 @@ void printLL(node*);
 node* parseString(char*, char, node*, char*);
 node* readFile(int, char*);
 
-void* makeArray(node* head){
+//sets fileType to 1 for letters or 0 for integers. sets and returns -1 on error.
+int setFileType(node* head){
   node* ptr = head;
   while(ptr!=NULL){
     if(strlen(ptr->str)==0)
       ptr = ptr->next;
     else{
-      if(isdigit(ptr->str[0]>0)
+      if(isdigit(ptr->str[0]>0))
 	 fileType = 0;
       else
 	fileType = 1;
+      break;
     }
   }
+    return fileType;
+
+}
+
+void* makeArray(node* head){
+  node* ptr = head;
   node* prev = NULL;
   int size = 0;
   while(ptr!=NULL){
@@ -63,7 +72,7 @@ void* makeArray(node* head){
 
 //return 1 if A>B, -1 if B>A, and 0 if A=B
 int comparator(void* tokenA, void* tokenB){
-  if(fileType==1){
+  if(fileType==1){  //comparing integers
     char* a = (char*)tokenA;
     char* b = (char*)tokenB;
     int position = 0;
@@ -197,10 +206,6 @@ node* readFile(int arguments, char* fileName){
 	return NULL;
       }
     }
-
-    
-    //in place of this print statement, add each token to linked list
-    // printf("FILE:%s\n", buffer);
     head =  parseString(buffer, ',', head, brokenToken);
     
     if(bytesRead!=0){
@@ -220,7 +225,9 @@ node* readFile(int arguments, char* fileName){
 
 
 int main (int argc, char** argv){
-  void* array =  makeArray(readFile(argc, argv[1]));
+  node* head = readFile(argc, argv[1]);
+  setFileType(head);
+  void* array =  makeArray(head);
   
 
   return 0;

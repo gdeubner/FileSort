@@ -2,8 +2,8 @@
 #define FILESORT_H
 
 
-char* LEGAL_CHARS = "abcdefghijklmnopqrstuvwxyz1234567890";
-char* ALL_NUMS = "1234567890";
+char* LEGAL_CHARS = "-abcdefghijklmnopqrstuvwxyz1234567890";
+char* ALL_NUMS = "-1234567890";
 
 int comparator(void*, void*);
 
