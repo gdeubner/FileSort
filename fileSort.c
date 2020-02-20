@@ -7,7 +7,7 @@
 
 //need to figure out how to combine tokens split when reading in pice of file!!!
 
-int fileType = 1; //0 = numbers, 1 = letters
+int fileType = -1; //0 = numbers, 1 = letters
 int errorNumber;  //this is set to value of errno for displaying later
 int* numArray;
 char** strArray;
@@ -21,6 +21,16 @@ node* readFile(int, char*);
 
 void* makeArray(node* head){
   node* ptr = head;
+  while(ptr!=NULL){
+    if(strlen(ptr->str)==0)
+      ptr = ptr->next;
+    else{
+      if(isdigit(ptr->str[0]>0)
+	 fileType = 0;
+      else
+	fileType = 1;
+    }
+  }
   node* prev = NULL;
   int size = 0;
   while(ptr!=NULL){
