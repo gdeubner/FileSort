@@ -7,18 +7,41 @@
 
 //need to figure out how to combine tokens split when reading in pice of file!!!
 
+int arraySize = 0;
 int fileType = -1; //0 = numbers, 1 = letters
 int errorNumber;  //this is set to value of errno for displaying later
-int* numArray;
-char** strArray;
+int* numArray;  //for holding an array of numbers
+char** strArray;  // for holding an array of numbers
 
+void printArray(void*, int);
 int setFileType(node*);
 void* makeArray(node*);
-int comparator(void*, void*);
+int compareChar(void*, void*);
+int compareInt(void*, void*);
 char* cleanStr(char*);
 void printLL(node*);
 node* parseString(char*, char, node*, char*);
 node* readFile(int, char*);
+
+//takes array of char* or int, ft=fileType, 1 for char* and 0 for int
+void printArray(void* array, int ft){
+  if(ft==1){// strings
+    char** strArr = (char**)array;
+    int i;
+    for(i=0; i<arraySize; i++){
+      printf("[%s]",strArr[i]);
+      
+    }
+  }
+  else if(ft == 0){
+    int** strInt = (int**)array;
+    int i;
+    for(i=0; i<arraySize; i++){
+      printf("[%d]",strInt[i]);
+    }
+  }
+  printf("\n");
+}
 
 //sets fileType to 1 for letters or 0 for integers. sets and returns -1 on error.
 int setFileType(node* head){
@@ -41,67 +64,66 @@ int setFileType(node* head){
 void* makeArray(node* head){
   node* ptr = head;
   node* prev = NULL;
-  int size = 0;
   while(ptr!=NULL){
-    size++;
+    arraySize++;
     ptr = ptr->next;
   }
   ptr = head;
   int count = 0;
   if(fileType==1){//letters
-    char** array = malloc(sizeof(char*)*size);
+    char** array = malloc(sizeof(char*)*arraySize);
     while(ptr!=NULL){
       array[count] = ptr->str;
       prev = ptr;
       ptr = ptr->next;
       free(prev);
+      count++;
     }
     return array;
   }
   else{//numbers
-    int* array = malloc(sizeof(int)*size);
+    int* array = malloc(sizeof(int)*arraySize);
     while(ptr!=NULL){
       array[count] = atoi(ptr->str);
       prev = ptr;
       ptr = ptr->next;
       free(prev);
+      count++;
     }
     return array;
   }
 }
 
 //return 1 if A>B, -1 if B>A, and 0 if A=B
-int comparator(void* tokenA, void* tokenB){
-  if(fileType==1){  //comparing integers
-    char* a = (char*)tokenA;
-    char* b = (char*)tokenB;
-    int position = 0;
-    while(a[position]!='\0'&&b[position]!='\0'){
-      if((int)a[position]<(int)b[position]){
-	return 1;
-      }
-      else if((int)a[position]>(int)b[position]){
-	return -1;
-      }
-      position++;
+int compareChar(void* TOKENA, void* TOKENB){
+  char* a = (char*)TOKENA;
+  char* b = (char*)TOKENB;
+  int position = 0;
+  while(a[position]!='\0'&&b[position]!='\0'){
+    if((int)a[position]<(int)b[position]){
+      return 1;
     }
-    if(a[position]=='\0'&b[position]!='\0')
+    else if((int)a[position]>(int)b[position]){
       return -1;
-    if(a[position]!='\0'&&b[position]=='\0')
-      return 1;
-    return 0;
+    }
+    position++;
   }
-  else{
-    int a = *((int*)tokenA);
-    int b = *((int*)tokenB); 
-    if(a>b)
-      return 1;
-    if(a<b)
-      return -1;
-    return 0;
-  }
+  if(a[position]=='\0'&b[position]!='\0')
+    return -1;
+  if(a[position]!='\0'&&b[position]=='\0')
+    return 1;
+  return 0;
 }
+int compareInt(void* TOKENA, void* TOKENB){
+  int* a = (int*)TOKENA;
+  int* b = (int*)TOKENB;
+  if(a>b)
+    return 1;
+  if(b>a)
+    return -1;
+  return 0;
 
+}
 
 
 //removes all characters from a string that are not lowercase letters or numbers
@@ -183,31 +205,26 @@ node* readFile(int arguments, char* fileName){
     printf("ERROR: unable to malloc.Errno: %d\n", errorNumber);
     return NULL;
   }
-
   int totalBytesRead = 0; //all bytes read 
   int bytesRead = -2;  //bytes read in one iteration of read()
   char* brokenToken = NULL;
   node* head = NULL;
   int numNodes = 0;
   do{
-    
     memset(buffer, '\0', (bytesToRead));
     bytesRead = 0;
-
     while(bytesRead < bytesToRead){
       bytesRead = read(fd, buffer+totalBytesRead, bytesToRead-totalBytesRead);
       errorNumber = errno;
       totalBytesRead+=bytesRead;
       if(bytesRead==0)
 	break;
-
       if(bytesRead<0){
 	printf("ERROR: Unable to read bytes from file. Errno: %d", errorNumber);
 	return NULL;
       }
     }
     head =  parseString(buffer, ',', head, brokenToken);
-    
     if(bytesRead!=0){
       brokenToken = head->str;
       node* temp = head;
@@ -215,20 +232,17 @@ node* readFile(int arguments, char* fileName){
       free(temp);
       numNodes--;
     }
-
   }while(bytesRead != 0);
-
-  printLL(head);
   close(fd);
   return head;
 }
-
-
 int main (int argc, char** argv){
   node* head = readFile(argc, argv[1]);
+  //  printLL(head);
   setFileType(head);
-  void* array =  makeArray(head);
-  
+  char** array = (char**) makeArray(head);
+  //printf("%s\n", array[0]);
+  printArray(array, fileType);
 
   return 0;
 }
