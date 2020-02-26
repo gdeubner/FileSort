@@ -96,25 +96,26 @@ int quickSort(void* toSort,int (*comparator)(void*,void*)){
   split(toSort,0,arraySize-1,comparator);
   printArray(toSort,fileType);
   } else { //if filetype is ints
-    char**array=(char**)toSort;
-    int** numArray=malloc(sizeof(int*)*arraySize);
-    int i;
-    for(i=0;i<arraySize;i++){
-      numArray[i]=atoi(array[i]);
-    }
-    split(numArray,0,arraySize-1,comparator);
-    printArray(numArray,fileType);
+    int**array=(int**)toSort;
+    //int** numArray=malloc(sizeof(int*)*arraySize);
+    //int i;
+    //for(i=0;i<arraySize;i++){
+    // numArray[i]=atoi(array[i]);
+    //}
+    split(array,0,arraySize-1,comparator);
+    printArray(array,fileType);
   }
   return 1;
 }
 int insertionSort(void* toSort,int (*comparator)(void*,void*)){
   int i,j;
   if(fileType==0){//if filetype is ints
-    char** sarray=(char**)toSort;
-    int** array=malloc(sizeof(int*)*arraySize);
-    for(i=0;i<arraySize;i++){
-      array[i]=atoi(sarray[i]); //creates proper integer array
-    }
+    //char** sarray=(char**)toSort;
+    //int** array=malloc(sizeof(int*)*arraySize);
+    //for(i=0;i<arraySize;i++){
+    //array[i]=atoi(sarray[i]); //creates proper integer array
+    //}
+    int** array=(int**)toSort;
     for(i=1;i<arraySize;i++){
       int* cmp=array[i];
 	j=i-1;
@@ -188,15 +189,28 @@ void* makeArray(node* head){
   }
   ptr = head;
   int count = 0;
+  if(fileType==1){
     char** array = malloc(sizeof(char*)*arraySize);
     while(ptr!=NULL){
-      array[count] = ptr->str;
+      array[count]=ptr->str;
       prev = ptr;
       ptr = ptr->next;
       free(prev);
       count++;
     }
     return array;
+  } else{
+    int** array=malloc(sizeof(int*)*arraySize);
+    while(ptr!=NULL){
+      long temp=atoi(ptr->str);
+      array[count]=(int*)temp;
+      prev=ptr;
+      ptr=ptr->next;
+      free(prev);
+      count++;
+    }
+    return array;
+  }
 }
 
 //return 1 if A>B, -1 if B>A, and 0 if A=B
@@ -220,8 +234,8 @@ int compareChar(void* TOKENA, void* TOKENB){
   return 0;
 }
 int compareInt(void* TOKENA, void* TOKENB){
-  int a = (int)TOKENA;
-  int b = (int)TOKENB;
+  long a = (long)TOKENA;
+  long b = (long)TOKENB;
   if(a<0&&b>=0)
     return -1;
   if(b<0&&a>=0)
@@ -346,19 +360,19 @@ node* readFile(int arguments, char* fileName){
   return head;
 }
 int main (int argc, char** argv){
-  if(argc!=3||argv[2][0]!='-'){
-    printf("ERROR: Please enter two properly formatted commands\n");
+  if(argc!=3||argv[1][0]!='-'){
+    printf("Fatal Error: Please enter two properly formatted commands\n");
     return 0;
   }
-  char command=argv[2][1];
+  char command=argv[1][1];
   if(command!='q'&&command!='i'){
-    printf("ERROR: Please enter two properly formatted commands\n");
+    printf("Fatal Error: Please enter two properly formatted commands\n");
     return 0;
   }
-  node* head = readFile(argc, argv[1]);
+  node* head = readFile(argc, argv[2]);
   //printLL(head);
   setFileType(head);
-  char** array=(char**)makeArray(head);
+  void* array=makeArray(head);
   if(fileType==1){
     if(command=='q'){
     quickSort(array,compareChar);
