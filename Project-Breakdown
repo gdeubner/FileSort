@@ -77,3 +77,9 @@ fileSort.c:
 	  	     - will return either a linked list of strngs
 	- int* convertLLtoArray (string linked list)
 	- char* convertLLtoArray (string linked list) 
+
+TO DO:
+add error Messages
+    types: fatal, warning, ect
+    fatal: can't continue (wrong file name, wrong input name)
+    warning for unable to malloc, retry 3ish times, then fatal error
