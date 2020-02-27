@@ -271,8 +271,6 @@ node*  parseString(char* str, char delim, node* head, char* brokenToken, int las
   int position = 0;
   int lastDelim = 0;//position right after last deliminator. starts at beginning of string
   int isFirstToken = 1;  //1 if token being read in is the first token read in, 0 otherwise
-
-    printf("parsed\n");
   while(str[lastDelim]!= '\0'){  //iterates until reaches end of string passed
     if(str[position]==delim||str[position]=='\0'){
       char* strTemp = malloc((sizeof(char)*(position-lastDelim)+1));
@@ -289,7 +287,6 @@ node*  parseString(char* str, char delim, node* head, char* brokenToken, int las
 	strncpy(strTemp2+strlen(brokenToken), strTemp, strlen(strTemp));
 	free(newNode->str);
 	newNode->str = strTemp2;
-	printf("Whole str: %s\n", strTemp2);
       }
       lastDelim = position+1;
     }
@@ -341,17 +338,13 @@ node* readFile(int arguments, char* fileName){
       lastCharIsDelim = 1;
     else
       lastCharIsDelim = 0;
-    printf("Buffer: %s\n", buffer);
     head =  parseString(buffer, delim, head, brokenToken, lastCharIsDelim);
-    //printLL(head);
-    printf("bytesRead = %d\n", bytesRead);
     if(bytesRead!=0){
       brokenToken = head->str;
       node* temp = head;
       head = head->next;
        free(temp);
       numNodes--;
-      printf("Broken token: %s\n", brokenToken);
     }
     else{
       brokenToken=NULL;
