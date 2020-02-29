@@ -5,8 +5,6 @@
 #include <string.h>
 #include "fileSort.h"
 
-//need to figure out how to combine tokens split when reading in pice of file!!!
-
 char delim = ',';
 int arraySize = 0;
 int fileType = -1; //0 = numbers, 1 = letters
