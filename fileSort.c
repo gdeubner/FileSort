@@ -12,29 +12,26 @@ int arraySize = 0;
 int fileType = -1; //0 = numbers, 1 = letters
 int errorNumber;  //this is set to value of errno for displaying later
 int* numArray;  //for holding an array of numbers
-char** strArray;  // for holding an array of numbers
+char** strArray;  // for holding an array of chars
 
-void printArray(void*, int);
-int setFileType(node*);
-void* makeArray(node*);
-int compareChar(void*, void*);
-int compareInt(void*, void*);
-char* cleanStr(char*);
-void printLL(node*);
-node* parseString(char* buffer, char delim, node* head, char* brokenToken, int lastCharIsDelim);
-node* readFile(int, char*);
-int insertionSort(void*,int (*comparator)(void*,void*));
-int quickSort(void*,int (*comparator)(void*,void*));
-void split(void*,int,int,int (*comparator)(void*,void*));
+int errorCheck(int argc, char** argv){
+  if(argc!=3||argv[1][0]!='-'){
+    printf("Fatal Error: Please enter two properly formatted commands\n");
+    exit(0);
+  }
+  if(argv[1][1]!='q'&&argv[1][1]!='i'){
+    printf("Fatal Error: Please enter two properly formatted commands\n");
+    exit(0);
+  }
+  return 0;
+}
 
 //recursive function that quicksorts given array
 void split(void* arr,int lo,int hi,int(*comparator)(void*,void*)){
   if(fileType==1){
     char** array=(char**)arr;
-    int i;
-    int j;
+    int i, j, pivot;
     char* temp;
-    int pivot;
     if(lo<hi){
     i=lo;
     j=hi;
@@ -61,10 +58,8 @@ void split(void* arr,int lo,int hi,int(*comparator)(void*,void*)){
      }
   } else{
     int** array=(int**)arr;
-    int i;
-    int j;
+    int i, j, pivot;
     int* temp;
-    int pivot;
     if(lo<hi){
     i=lo;
     j=hi;
@@ -98,11 +93,6 @@ int quickSort(void* toSort,int (*comparator)(void*,void*)){
   printArray(toSort,fileType);
   } else { //if filetype is ints
     int**array=(int**)toSort;
-    //int** numArray=malloc(sizeof(int*)*arraySize);
-    //int i;
-    //for(i=0;i<arraySize;i++){
-    // numArray[i]=atoi(array[i]);
-    //}
     split(array,0,arraySize-1,comparator);
     printArray(array,fileType);
   }
@@ -111,11 +101,6 @@ int quickSort(void* toSort,int (*comparator)(void*,void*)){
 int insertionSort(void* toSort,int (*comparator)(void*,void*)){
   int i,j;
   if(fileType==0){//if filetype is ints
-    //char** sarray=(char**)toSort;
-    //int** array=malloc(sizeof(int*)*arraySize);
-    //for(i=0;i<arraySize;i++){
-    //array[i]=atoi(sarray[i]); //creates proper integer array
-    //}
     int** array=(int**)toSort;
     for(i=1;i<arraySize;i++){
       int* cmp=array[i];
@@ -159,9 +144,7 @@ void printArray(void* array, int ft){
       printf("%d\n",strInt[i]);
     }
   }
-  printf("\n");
 }
-
 //sets fileType to 1 for letters or 0 for integers. sets and returns -1 on error.
 int setFileType(node* head){
   node* ptr = head;
@@ -267,28 +250,33 @@ void printLL(node* head){  //for testing purposes
 }
 //will parse a given string by a given delimitor
 //last error, if last char is a deliminator, it merges the last token with the next token
-node*  parseString(char* str, char delim, node* head, char* brokenToken, int lastCharIsDelim){
+node* parseString(char* str, char delim, node* head){
   int position = 0;
   int lastDelim = 0;//position right after last deliminator. starts at beginning of string
   int isFirstToken = 1;  //1 if token being read in is the first token read in, 0 otherwise
   while(str[lastDelim]!= '\0'){  //iterates until reaches end of string passed
     if(str[position]==delim||str[position]=='\0'){
-      char* strTemp = malloc((sizeof(char)*(position-lastDelim)+1));
-      node* newNode = malloc(sizeof(node));
-      strncpy(strTemp, str+lastDelim, position-lastDelim);
-      newNode->next = head;
-      newNode->str = cleanStr(strTemp);
-      head = newNode;
-      lastDelim = position+1;
-      if(brokenToken!=NULL && isFirstToken==1 && lastCharIsDelim==1){
-	isFirstToken=0;
-	char* strTemp2 = malloc(sizeof(char)*(strlen(strTemp)+strlen(brokenToken)));
-	strncpy(strTemp2, brokenToken, strlen(brokenToken));
-	strncpy(strTemp2+strlen(brokenToken), strTemp, strlen(strTemp));
-	free(newNode->str);
-	newNode->str = strTemp2;
+      node* nodePtr;
+      if(head==NULL || head->delimTerm==1){ //first node in head or last node was complete (terminated with delim)
+	nodePtr = malloc(sizeof(node));
+	char* strTemp = malloc((sizeof(char)*(position-lastDelim)+1));
+	strncpy(strTemp, str+lastDelim, position-lastDelim);
+	nodePtr->next = head;
+	nodePtr->str = cleanStr(strTemp);
+	head = nodePtr;
+      }else{  //last node in head was incomplete (will add the contents of the next token to the last)
+	nodePtr = head;
+	char* strTemp = malloc(sizeof(char)*(position-lastDelim + strlen(head->str)));
+	strncpy(strTemp, head->str, strlen(head->str));
+	strncpy(strTemp+strlen(head->str), str+lastDelim, position-lastDelim);
+	free(head->str);
+	head->str = strTemp;
       }
       lastDelim = position+1;
+      if(str[position]==',')
+	nodePtr->delimTerm = 1;
+      else
+	nodePtr->delimTerm = 0;	
     }
     position++;  
   }
@@ -296,84 +284,66 @@ node*  parseString(char* str, char delim, node* head, char* brokenToken, int las
 }
 //will read in all charaters of a file, parse them by commas, and add them to a linked list
 node* readFile(int arguments, char* fileName){
-  int bytesToRead = 5;
-  if(arguments <=1){
-    printf("ERROR: insuficient arguments.\n");
-    return NULL;
-  }
+  int bytesToRead = 2000;   
   int fd = open(fileName, O_RDONLY);
   errorNumber = errno;
   if(fd<0){
-    printf("ERROR: unable to open file[%s]. Errno: %d\n", fileName, errorNumber);
+    printf("Fatal Error: File %s does not exist. Errno: %d\n", fileName, errorNumber);
     return NULL;
   }
-  char * buffer  = (char*)malloc(sizeof(char)*(bytesToRead));
-  errorNumber=errno;
-  if(buffer==NULL){
-    printf("ERROR: unable to malloc.Errno: %d\n", errorNumber);
-    return NULL;
+  char * buffer  = NULL;
+  int mallocCount = 1;
+  while(buffer==NULL&&mallocCount<4){
+    buffer = (char*)malloc(sizeof(char)*(bytesToRead));
+    errorNumber=errno;
+    if(buffer==NULL){
+      printf("Warning: Unable to malloc. Attempt number: %d Errno: %d\n", mallocCount, errorNumber);
+      mallocCount++;
+    }
+  }
+  if(mallocCount>=4){
+    printf("Fatal Error: Malloc was unsuccessful. Errno: %d\n", errorNumber);
+    exit(0);
   }
   int totalBytesRead = 0; //all bytes read 
   int bytesRead = -2;  //bytes read in one iteration of read()
-  char* brokenToken = NULL;
   node* head = NULL;
   int numNodes = 0;
-  int lastCharIsDelim = 0;
- do{
+  int sizeOfFile=0;
+  do{   //reads set num of bytes, converts bytes to a LL and repeats until end of file
     memset(buffer, '\0', (bytesToRead));
     bytesRead = 0;
     totalBytesRead = 0;
-    while(bytesRead < bytesToRead){
+    while(bytesRead < bytesToRead){ // reads in first bytesToRead worth of bytes from file
       bytesRead = read(fd, buffer+totalBytesRead, bytesToRead-totalBytesRead);
       errorNumber = errno;
       totalBytesRead+=bytesRead;
       if(bytesRead==0)
 	break;
       if(bytesRead<0){
-	printf("ERROR: Unable to read bytes from file. Errno: %d", errorNumber);
-	return NULL;
+	printf("Fatal Error: Unable to read bytes from file. Errno: %d", errorNumber);
+	exit(0);
       }
     }
-    if(buffer[strlen(buffer)-1]==delim)
-      lastCharIsDelim = 1;
-    else
-      lastCharIsDelim = 0;
-    head =  parseString(buffer, delim, head, brokenToken, lastCharIsDelim);
-    if(bytesRead!=0){
-      brokenToken = head->str;
-      node* temp = head;
-      head = head->next;
-       free(temp);
-      numNodes--;
-    }
-    else{
-      brokenToken=NULL;
-    }
+    sizeOfFile+=strlen(buffer);
+    head = parseString(buffer, delim, head);  //converts bytes read to a LL
   }while(bytesRead != 0);
   close(fd);
+  if(sizeOfFile==0)
+    printf("Warning: file is empty\n");
   return head;
 }
 int main (int argc, char** argv){
-
-  if(argc!=3||argv[1][0]!='-'){
-    printf("Fatal Error: Please enter two properly formatted commands\n");
-    return 0;
-  }
-  char command=argv[1][1];
-  if(command!='q'&&command!='i'){
-    printf("Fatal Error: Please enter two properly formatted commands\n");
-    return 0;
-  }
+  errorCheck(argc, argv);
+  char command=argv[1][1];  
   node* head = readFile(argc, argv[2]);
-  //printLL(head);
   setFileType(head);
   void* array=makeArray(head);
   if(fileType==1){
     if(command=='q'){
     quickSort(array,compareChar);
     }else{
-    insertionSort(array,compareChar);
-    
+    insertionSort(array,compareChar);    
     }
   }
   if(fileType==0)

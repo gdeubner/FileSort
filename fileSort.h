@@ -11,7 +11,23 @@ int comparator(void*, void*);
 typedef struct NODE{
   char* str;
   struct NODE* next;
-  
+  int delimTerm;
 }node;
+
+int errorCheck(int argc, char** argv);
+void printArray(void*, int);
+int setFileType(node*);
+void* makeArray(node*);
+int compareChar(void*, void*);
+int compareInt(void*, void*);
+char* cleanStr(char*);
+void printLL(node*);
+node* parseString(char* buffer, char delim, node* head);
+node* readFile(int, char*);
+int insertionSort(void*,int (*comparator)(void*,void*));
+int quickSort(void*,int (*comparator)(void*,void*));
+void split(void*,int,int,int (*comparator)(void*,void*));
+
+
 
 #endif
