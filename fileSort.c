@@ -27,6 +27,7 @@ void sortFile(char command, void* array, int fileType){
     }else{
     insertionSort(array,compareInt);
     }
+  free(array);
 }
 int errorCheck(int argc, char** argv){
   if(argc!=3||argv[1][0]!='-'){
@@ -127,8 +128,8 @@ int insertionSort(void* toSort,int (*comparator)(void*,void*)){
     }
     printArray(array,fileType);
   } else{
-    char** array=malloc(sizeof(char*)*arraySize);
-    array=(char**)toSort;
+    //char** array=malloc(sizeof(char*)*arraySize);
+    char** array=(char**)toSort;
     for(i=1;i<arraySize;i++){
       char* cmp=array[i];
       j=i-1;
@@ -190,6 +191,7 @@ void* makeArray(node* head){
       array[count]=ptr->str;
       prev = ptr;
       ptr = ptr->next;
+      free(prev->str);
       free(prev);
       count++;
     }
@@ -201,6 +203,7 @@ void* makeArray(node* head){
       array[count]=(int*)temp;
       prev=ptr;
       ptr=ptr->next;
+      free(prev->str);
       free(prev);
       count++;
     }
@@ -252,6 +255,7 @@ char* cleanStr(char* str){
       numCharsInclStr++;
     }
   }
+  free(str);
   return clStr;
 }
 void printLL(node* head){  //for testing purposes
@@ -342,6 +346,7 @@ node* readFile(int arguments, char* fileName){
     sizeOfFile+=strlen(buffer);
     head = parseString(buffer, delim, head);  //converts bytes read to a LL
   }while(bytesRead != 0);
+  free(buffer);
   close(fd);
   if(sizeOfFile==0)
     printf("Warning: file is empty\n");
