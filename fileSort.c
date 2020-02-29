@@ -14,6 +14,22 @@ int errorNumber;  //this is set to value of errno for displaying later
 int* numArray;  //for holding an array of numbers
 char** strArray;  // for holding an array of chars
 
+
+void sortFile(char command, void* array, int fileType){
+  if(fileType==1){
+    if(command=='q'){
+    quickSort(array,compareChar);
+    }else{
+    insertionSort(array,compareChar);    
+    }
+  }
+  if(fileType==0)
+    if(command=='q'){
+    quickSort(array,compareInt);
+    }else{
+    insertionSort(array,compareInt);
+    }
+}
 int errorCheck(int argc, char** argv){
   if(argc!=3||argv[1][0]!='-'){
     printf("Fatal Error: Please enter two properly formatted commands\n");
@@ -339,18 +355,6 @@ int main (int argc, char** argv){
   node* head = readFile(argc, argv[2]);
   setFileType(head);
   void* array=makeArray(head);
-  if(fileType==1){
-    if(command=='q'){
-    quickSort(array,compareChar);
-    }else{
-    insertionSort(array,compareChar);    
-    }
-  }
-  if(fileType==0)
-    if(command=='q'){
-    quickSort(array,compareInt);
-    }else{
-    insertionSort(array,compareInt);
-    }
+  sortFile( command, array, fileType);
   return 0;
 }

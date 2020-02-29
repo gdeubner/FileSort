@@ -14,6 +14,7 @@ typedef struct NODE{
   int delimTerm;
 }node;
 
+void sortFile(char command, void* array, int fileType);
 int errorCheck(int argc, char** argv);
 void printArray(void*, int);
 int setFileType(node*);
