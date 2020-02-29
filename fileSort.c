@@ -29,6 +29,7 @@ void sortFile(char command, void* array, int fileType){
     }else{
     insertionSort(array,compareInt);
     }
+  free(array);
 }
 int errorCheck(int argc, char** argv){
   if(argc!=3||argv[1][0]!='-'){
