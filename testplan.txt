@@ -1,0 +1,22 @@
+Tests used:
+
+0,1,2,3,4,5,6
+Used for simple non-negative integer sorting.
+
+-1,2,-3,5,-6
+Used for negative AND non-negative integer sorting.
+
+hello,dave,is,my,name
+Used for string sorting.
+
+,,2,
+Used to see how program reacts to empty tokens and integers.
+
+,,hello,
+Used to see how program reacts to empty tokens and strings.
+
+,,,
+Used to see how program reacts to empty files.
+
+-1,-2	,09	, 5,	205,	12
+Used to see how program reacts to newlines, tabs, and spaces.
