@@ -14,28 +14,37 @@ char** strArray;  // for holding an array of chars
 
 
 void sortFile(char command, void* array, int fileType){
-  if(fileType==1){
+  if(fileType==1){  //strings
     if(command=='q'){
-    quickSort(array,compareChar);
+      quickSort(array,compareChar);
     }else{
-    insertionSort(array,compareChar);    
+      insertionSort(array,compareChar);    
+    }
+    char** charArray = (char**)array;
+    int i=0;
+    for(i=0; i<arraySize; i++)
+      free(charArray[i]);
+  }
+  if(fileType==0){  //ints
+    if(command=='q'){
+      quickSort(array,compareInt);
+    }else{
+      insertionSort(array,compareInt);
     }
   }
-  if(fileType==0)
-    if(command=='q'){
-    quickSort(array,compareInt);
-    }else{
-    insertionSort(array,compareInt);
-    }
   free(array);
 }
 int errorCheck(int argc, char** argv){
-  if(argc!=3||argv[1][0]!='-'){
-    printf("Fatal Error: Please enter two properly formatted commands\n");
+  if(argc>3){
+    printf("Fatal Error: User entered too man commands.\n");
     exit(0);
   }
-  if(argv[1][1]!='q'&&argv[1][1]!='i'){
-    printf("Fatal Error: Please enter two properly formatted commands\n");
+  if(argc<3){
+    printf("Fatal Error: User entered too few commands.");
+    exit(0);
+  }
+  if(compareChar(argv[1], "-i")!=0 && compareChar(argv[1],"-q")!=0){
+    printf("Fatal Error: %s is not a proper input command.\n", argv[1]);
     exit(0);
   }
   return 0;
@@ -313,7 +322,7 @@ node* readFile(int arguments, char* fileName){
     buffer = (char*)malloc(sizeof(char)*(bytesToRead));
     errorNumber=errno;
     if(buffer==NULL){
-      printf("Warning: Unable to malloc. Attempt number: %d Errno: %d\n", mallocCount, errorNumber);
+      printf("Error: Unable to malloc. Attempt number: %d Errno: %d\n", mallocCount, errorNumber);
       mallocCount++;
     }
   }
@@ -347,7 +356,7 @@ node* readFile(int arguments, char* fileName){
   free(buffer);
   close(fd);
   if(sizeOfFile==0)
-    printf("Warning: file is empty\n");
+    printf("Warning: File is empty\n");
   return head;
 }
 int main (int argc, char** argv){
@@ -356,6 +365,6 @@ int main (int argc, char** argv){
   node* head = readFile(argc, argv[2]);
   setFileType(head);
   void* array=makeArray(head);
-  sortFile( command, array, fileType);
+  sortFile(command, array, fileType);
   return 0;
 }
