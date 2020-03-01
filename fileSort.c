@@ -217,7 +217,7 @@ void* makeArray(node* head){
     return array;
   }
 }
-//return 1 if A>B, -1 if B>A, and 0 if A=B
+//return -1 if A>B, 1 if B>A, and 0 if A=B
 int compareChar(void* TOKENA, void* TOKENB){
   char* a = (char*)TOKENA;
   char* b = (char*)TOKENB;
@@ -231,10 +231,10 @@ int compareChar(void* TOKENA, void* TOKENB){
     }
     position++;
   }
-  if(a[position]=='\0'&b[position]!='\0')
-    return -1;
-  if(a[position]!='\0'&&b[position]=='\0')
+  if(a[position]=='\0' && b[position]!='\0')
     return 1;
+  if(a[position]!='\0' && b[position]=='\0')
+    return -1;
   return 0;
 }
 int compareInt(void* TOKENA, void* TOKENB){
