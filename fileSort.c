@@ -128,7 +128,6 @@ int insertionSort(void* toSort,int (*comparator)(void*,void*)){
     }
     printArray(array,fileType);
   } else{
-    //char** array=malloc(sizeof(char*)*arraySize);
     char** array=(char**)toSort;
     for(i=1;i<arraySize;i++){
       char* cmp=array[i];
@@ -191,7 +190,6 @@ void* makeArray(node* head){
       array[count]=ptr->str;
       prev = ptr;
       ptr = ptr->next;
-      free(prev->str);
       free(prev);
       count++;
     }
