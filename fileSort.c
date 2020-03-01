@@ -25,11 +25,17 @@ void sortFile(char command, void* array, int fileType){
     for(i=0; i<arraySize; i++)
       free(charArray[i]);
   }
-  if(fileType==0){  //ints
+  else if(fileType==0){  //ints
     if(command=='q'){
       quickSort(array,compareInt);
     }else{
       insertionSort(array,compareInt);
+    }
+  }
+  else{
+    int i = 0;
+    for(i=0; i<arraySize; i++){
+      printf("\n");
     }
   }
   free(array);
